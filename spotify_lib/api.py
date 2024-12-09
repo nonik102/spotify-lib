@@ -3,23 +3,25 @@ from typing import Any
 import requests
 from requests import Request, Response, Session
 
-from spotify_lib.common import JsonBlob, Token, SPOTIFY_CLIENT_ID, SPOTIFY_SECRET
+from spotify_lib.common import SPOTIFY_SECRET_FILE_NAME, TOKEN_PATH, JsonBlob, Token
+from spotify_lib.utils import SpotifySecret, SpotifySecretProvider
 
 class CredentialsManager:
 
-    def __init__(self) -> None:
-        self._load_credentials()
+    def __init__(self, secret_provider: SpotifySecretProvider) -> None:
+        self._secret_provider = secret_provider
+        self._secret: SpotifySecret = self._load_credentials()
 
-    def _load_credentials(self) -> None:
-        pass
+    def _load_credentials(self):
+        return self._secret_provider.get_secret(SPOTIFY_SECRET_FILE_NAME)
 
     @property
     def client_id(self) -> str:
-        return SPOTIFY_CLIENT_ID
+        return self._secret.client_id
 
     @property
     def secret(self) -> str:
-        return SPOTIFY_SECRET
+        return self._secret.secret
 
 class BaseAPI:
     def __init__(self) -> None:
@@ -86,7 +88,8 @@ class SpotifyAPI(BaseAPI):
         )
 
 def main():
-    creds = CredentialsManager()
+    secret_provider = SpotifySecretProvider(TOKEN_PATH)
+    creds = CredentialsManager(secret_provider)
     spotify_api = SpotifyAPI("https://accounts.spotify.com/api", creds)
     token = spotify_api.get_auth_token()
     print(token)
