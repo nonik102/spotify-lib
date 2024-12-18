@@ -1,13 +1,32 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 import os
 
 from datetime import datetime, timedelta
 from typing import IO
-from spotify_lib.api import SpotifyAPI
-from spotify_lib.common import Token
+from spotify_lib.common import Token, SPOTIFY_SECRET_FILE_NAME
+
+
+class CredentialsManager:
+    def __init__(self, secret_provider: SpotifySecretProvider) -> None:
+        self._secret_provider = secret_provider
+        self._secret: SpotifySecret = self._load_credentials()
+
+    def _load_credentials(self):
+        return self._secret_provider.get_secret(SPOTIFY_SECRET_FILE_NAME)
+
+    @property
+    def client_id(self) -> str:
+        return self._secret.client_id
+
+    @property
+    def secret(self) -> str:
+        return self._secret.secret
+
 
 class SpotifyTokenProvider:
-    def __init__(self, spotify_api: SpotifyAPI) -> None:
+    def __init__(self, spotify_api: "SpotifyAPI") -> None:
         self._api = spotify_api
         self._token: Token | None = None
         self._token_death_time: datetime | None = None
