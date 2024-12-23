@@ -3,8 +3,8 @@ from typing import Any
 import requests
 from requests import Request, Response, Session
 
-from spotify_lib.common import TOKEN_PATH, JsonBlob, Token
-from spotify_lib.utils import SpotifySecretProvider, CredentialsManager
+from spotify_lib.common import JsonBlob, SpotifyID, Token
+from spotify_lib.auth import SpotifyTokenProvider
 
 
 class BaseAPI:
@@ -17,7 +17,6 @@ class BaseAPI:
 
     @property
     def session(self) -> Session:
-        # can add checking for if the session is still alive
         return self._session
 
     def _send(self, request: Request) -> Response:
@@ -49,21 +48,14 @@ class BaseAPI:
 
 
 class SpotifyAPI(BaseAPI):
-    def __init__(self, base_url: str, credentials: CredentialsManager) -> None:
+    def __init__(self, base_url: str) -> None:
         super().__init__()
         self._base_url = base_url
-        self._creds = credentials
+        self._token_provider = SpotifyTokenProvider(self._get_auth_token)
 
-    def get_auth_token(self) -> Token:
+    def _get_auth_token(self, payload: JsonBlob) -> Token:
         url = f"{self._base_url}/token"
-        data = JsonBlob(
-            {
-                "grant_type": "client_credentials",
-                "client_id": self._creds.client_id,
-                "client_secret": self._creds.secret,
-            }
-        )
-        resp = self._post(url, data)
+        resp = self._post(url, payload)
         token_json = resp.json()
         return Token(
             value=token_json['access_token'],
@@ -71,13 +63,8 @@ class SpotifyAPI(BaseAPI):
             alive_seconds=token_json['expires_in']
         )
 
-def main():
-    secret_provider = SpotifySecretProvider(TOKEN_PATH)
-    creds = CredentialsManager(secret_provider)
-    spotify_api = SpotifyAPI("https://accounts.spotify.com/api", creds)
-    token = spotify_api.get_auth_token()
-    print(token)
+    @property
+    def token(self) -> Token:
+        return self._token_provider.token
 
 
-if __name__ == "__main__":
-    main()

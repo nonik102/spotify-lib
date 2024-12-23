@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import NewType
 
 SPOTIFY_SECRET_FILE_NAME="spotify_api"
-TOKEN_PATH="/home/nonik/.tokens"
 
 JsonBlob = NewType("JsonBlob", dict)
+SpotifyID = NewType("SpotifyID", int)
 
 @dataclass
 class Token:
