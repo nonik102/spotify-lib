@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import os
 
-from datetime import datetime, time, timedelta
-from typing import IO, Any, Callable, Sequence
+from datetime import datetime, timedelta
+from typing import Callable
 
 from spotify_lib.common import JsonBlob, Token
 
@@ -55,12 +54,3 @@ class SpotifySecret:
     client_id: str
     secret: str
 
-
-def main():
-    path="/home/nonik/.tokens"
-    secret_provider = SpotifySecretProvider(path)
-    secret = secret_provider.get_secret("spotify_api")
-    print(secret)
-
-if __name__ == "__main__":
-    main()

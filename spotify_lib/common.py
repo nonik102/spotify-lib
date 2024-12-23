@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import NewType
 
 SPOTIFY_SECRET_FILE_NAME="spotify_api"
