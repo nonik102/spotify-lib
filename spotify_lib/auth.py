@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from datetime import datetime, timedelta
-from typing import Callable
 
+from spotify_lib.api.auth import SpotifyAuthAPI
 from spotify_lib.common import JsonBlob, Token
 
 
@@ -12,8 +12,8 @@ SPOTIFY_SECRET_FILE_PATH = "/home/nonik/.tokens/spotify_api.tok"
 
 class SpotifyTokenProvider:
     # TODO: Fix this to lazy-load
-    def __init__(self, callback: Callable[[JsonBlob], Token]) -> None:
-        self._callback = callback
+    def __init__(self, api: SpotifyAuthAPI) -> None:
+        self._api = api
         self._token_death_time = datetime.min
         self._secret = self.get_secret()
         self._token: Token | None = None
@@ -39,7 +39,7 @@ class SpotifyTokenProvider:
             "client_id": self._secret.client_id,
             "client_secret": self._secret.secret,
         })
-        self._token = self._callback(data)
+        self._token = self._api.get_auth_token(data)
         # reset death time
         self._token_death_time = datetime.now() + timedelta(seconds=self._token.alive_seconds)
 
