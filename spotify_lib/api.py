@@ -67,4 +67,27 @@ class SpotifyAPI(BaseAPI):
     def token(self) -> Token:
         return self._token_provider.token
 
+    @property
+    def auth_headers(self) -> JsonBlob:
+        base_headers = super().headers
+        return JsonBlob(base_headers | {
+            "Authorization": f"Bearer {self.token}"
+        })
+
+    # api stuff #########################################################
+    def get_artist(self, artist_id: SpotifyID) -> JsonBlob:
+        url = f"{self._base_url}/artists/{artist_id}"
+        resp = self._get(url, headers=self.auth_headers)
+        body = resp.json()
+        return JsonBlob(body)
+
+    def search(self, query: str, desired_types: list[SpotifyItemType]) -> JsonBlob:
+        url = f"{self._base_url}/search"
+        params = {
+            "q": query,
+            "type": desired_types
+        }
+        resp = self._get(url, headers=self.auth_headers, params=params)
+        body = resp.json()
+        return JsonBlob(body)
 
