@@ -1,3 +1,4 @@
+from typing import Any
 from spotify_lib.api._base import BaseAPI
 from spotify_lib.common import Token, JsonBlob, SpotifyID, SpotifyItemType
 from spotify_lib.auth import SpotifyTokenProvider
@@ -44,3 +45,28 @@ class SpotifyAPI(BaseAPI):
         body = resp.json()
         return JsonBlob(body)
 
+    def _play(
+        self,
+        context_uri: SpotifyID | None = None,
+        uris: list[SpotifyID] | None = None,
+        offset: Any | None = None,
+        position_ms: int  = 0,
+        device_id: str | None = None
+    ) -> None:
+        url = f"{self._base_url}/me/player/play"
+        params = {}
+        if device_id is not None:
+            params['device_id'] = device_id
+        body: dict[str, Any] = {
+            "position_ms": position_ms
+        }
+        if context_uri is not None:
+            body['context_uri'] = context_uri
+        if uris is not None:
+            body['uris'] = uris
+        if offset is not None:
+            body['offset'] = offset
+        headers = self._std_auth_headers | {"Content-Type": "application/json"}
+        self._put(
+            url, headers=headers, params=params, data=body
+        )

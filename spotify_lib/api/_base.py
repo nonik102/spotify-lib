@@ -25,6 +25,7 @@ class BaseAPI:
         try:
             resp.raise_for_status()
         except HTTPError as e:
+            breakpoint()
             raise APIError(e) from e
         return resp
 
@@ -48,6 +49,20 @@ class BaseAPI:
             params=params,
             headers=self.headers | (headers or {}),
             data=data,
+        )
+        resp = self._send(req)
+        return resp
+
+    def _put(
+        self, url: str, data: JsonBlob,
+        headers: dict | None = None, params: dict[str, str] | None = None
+    ) -> Response:
+        req = Request(
+            method="PUT",
+            url=url,
+            params=params,
+            headers=self.headers | (headers or {}),
+            json=data,
         )
         resp = self._send(req)
         return resp
