@@ -9,3 +9,5 @@ The format should be as follows:
 client_id
 secret
 ```
+
+Please note that this repo is very much WIP and in active development. When in a satisfactory state, releases will be tagged.
