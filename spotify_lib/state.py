@@ -1,12 +1,12 @@
 
 from spotify_lib.api.auth import SpotifyAuthAPI
-from spotify_lib.common import Token
+from spotify_lib.common import Token, Scope
 from spotify_lib.auth import ScopedSpotifyTokenProvider
 
 
 class StateManager:
     def __init__(self) -> None:
-        scopes = []
+        scopes = [Scope('user-modify-playback-state')]
         auth_api = SpotifyAuthAPI()
         self._token_manager = ScopedSpotifyTokenProvider(auth_api, scopes)
 

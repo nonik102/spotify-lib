@@ -39,15 +39,31 @@ class BaseAPI:
         return resp
 
     def _post(
-        self, url: str, data: JsonBlob,
+        self, url: str, data: JsonBlob | None = None,
         headers: dict | None = None, params: dict[str, str] | None = None
     ) -> Response:
+        if data == None:
+            data = JsonBlob({})
         req = Request(
             method="POST",
             url=url,
             params=params,
             headers=self.headers | (headers or {}),
             data=data,
+        )
+        resp = self._send(req)
+        return resp
+
+    def _put(
+        self, url: str, data: JsonBlob,
+        headers: dict | None = None, params: dict[str, str] | None = None
+    ) -> Response:
+        req = Request(
+            method="PUT",
+            url=url,
+            params=params,
+            headers=self.headers | (headers or {}),
+            json=data,
         )
         resp = self._send(req)
         return resp
