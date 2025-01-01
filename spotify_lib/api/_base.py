@@ -25,7 +25,6 @@ class BaseAPI:
         try:
             resp.raise_for_status()
         except HTTPError as e:
-            breakpoint()
             raise APIError(e) from e
         return resp
 
@@ -40,9 +39,11 @@ class BaseAPI:
         return resp
 
     def _post(
-        self, url: str, data: JsonBlob,
+        self, url: str, data: JsonBlob | None = None,
         headers: dict | None = None, params: dict[str, str] | None = None
     ) -> Response:
+        if data == None:
+            data = JsonBlob({})
         req = Request(
             method="POST",
             url=url,

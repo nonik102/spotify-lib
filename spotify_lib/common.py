@@ -10,6 +10,7 @@ LOCAL_API_URL = "http://localhost:8000"
 
 JsonBlob = NewType("JsonBlob", dict)
 SpotifyID = NewType("SpotifyID", str)
+SpotifyURI = NewType("SpotifyURI", str)
 Scope = NewType("Scope", str)
 
 class SpotifyItemType(Enum):

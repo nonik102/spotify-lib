@@ -1,10 +1,10 @@
 from typing import Any
 from spotify_lib.api._base import BaseAPI
-from spotify_lib.common import Token, JsonBlob, SpotifyID, SpotifyItemType
-from spotify_lib.auth import SpotifyTokenProvider
+from spotify_lib.common import JsonBlob, SpotifyID, SpotifyItemType, SpotifyURI
+from spotify_lib.auth import _SpotifyTokenProvider
 
 class SpotifyAPI(BaseAPI):
-    def __init__(self, token_provider: SpotifyTokenProvider) -> None:
+    def __init__(self, token_provider: _SpotifyTokenProvider) -> None:
         super().__init__()
         self._base_url = "https://api.spotify.com/v1"
         self._token_provider = token_provider
@@ -39,7 +39,7 @@ class SpotifyAPI(BaseAPI):
         url = f"{self._base_url}/search"
         params = {
             "q": query,
-            "type": desired_types
+            "type": ",".join([str(s) for s in desired_types])
         }
         resp = self._get(url, headers=self._std_auth_headers, params=params)
         body = resp.json()
@@ -47,8 +47,8 @@ class SpotifyAPI(BaseAPI):
 
     def _play(
         self,
-        context_uri: SpotifyID | None = None,
-        uris: list[SpotifyID] | None = None,
+        context_uri: SpotifyURI | None = None,
+        uris: list[SpotifyURI] | None = None,
         offset: Any | None = None,
         position_ms: int  = 0,
         device_id: str | None = None
@@ -70,3 +70,10 @@ class SpotifyAPI(BaseAPI):
         self._put(
             url, headers=headers, params=params, data=body
         )
+
+    def enqueue(self, uri: SpotifyURI) -> None:
+        url = f"{self._base_url}/me/player/queue"
+        params = {
+            "uri": str(uri)
+        }
+        self._post(url, headers=self._std_auth_headers, params=params)

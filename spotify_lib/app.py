@@ -1,11 +1,13 @@
+import json
 import logging
+from typing import Annotated, List
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Query, Response
 
 from spotify_lib.api.v1 import SpotifyAPI
 from spotify_lib.state import StateManager
 from starlette.responses import RedirectResponse
-from spotify_lib.common import SpotifyID, SpotifyItemType
+from spotify_lib.common import SpotifyID, SpotifyItemType, SpotifyURI
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,10 @@ class App:
             "/play", self.play, methods=["GET"]
         )
         self.router.add_api_route(
-            "/play_album", self.play_album, methods=["GET"]
+            "/queue", self.queue, methods=["GET"]
+        )
+        self.router.add_api_route(
+            "/search", self.search, methods=["GET"]
         )
         self._state_manager = state_manager
         self._std_api = SpotifyAPI(state_manager._token_manager)
@@ -51,22 +56,22 @@ class App:
     def token(self):
         return self._state_manager.get_token()
 
-    def play(self, uri: SpotifyID) -> None:
+    def play(self, context_uri: SpotifyURI | None = None, uri: Annotated[list[SpotifyURI] | None, Query()] = None) -> None:
         self._std_api._play(
-            context_uri=uri
+            context_uri=context_uri,
+            uris=uri
         )
 
-    def play_album(self, name: str) -> None:
+    def queue(self, uri: SpotifyURI) -> None:
+        self._std_api.enqueue(uri)
+
+    def search(self, q: str, t: Annotated[list[str], Query()]) -> Response:
         search_result = self._std_api.search(
-            query=name,
-            desired_types=[SpotifyItemType.ALBUM]
+            query=q,
+            desired_types=[ SpotifyItemType[s.upper()] for s in t]
         )
-        albums = search_result['albums']['items']
-        album_uri = albums[0]['uri']
-        self._std_api._play(
-            context_uri=album_uri,
-            offset={"position": 0}
-        )
+        resp = Response(json.dumps(search_result))
+        return resp
 
 
 
